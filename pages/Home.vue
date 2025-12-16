@@ -5,8 +5,8 @@
       <div class="mt-2">Загрузка данных...</div>
     </v-card>
 
-    <!-- Состояние неверной сущности -->
-    <v-card v-else-if="!isValidEntity" class="text-center pa-4">
+    <!-- Состояние неверной сущности !isValidEntity-->
+    <v-card v-else-if="false" class="text-center pa-4">
       <v-icon color="error" size="64" class="mb-2">mdi-alert-circle-outline</v-icon>
       <div class="text-h6 mb-2">Недоступно</div>
       <div class="text-body-1 text-medium-emphasis">
@@ -68,179 +68,151 @@
       <!-- Вкладка контактов -->
       <v-window-item value="contacts">
         <v-card>
-          <v-card-text>
-            <!-- Прогресс загрузки -->
-            <div v-if="loadingContacts" class="text-center py-4">
-              <v-progress-circular indeterminate color="primary"></v-progress-circular>
-              <div class="mt-2">Загрузка контактов...</div>
-            </div>
+            <v-card-text>
+                <!-- Прогресс загрузки -->
+                <div v-if="loadingContacts" class="text-center py-4">
+                    <v-progress-circular indeterminate color="primary"></v-progress-circular>
+                    <div class="mt-2">Загрузка контактов...</div>
+                </div>
 
-            <!-- Сообщение об ошибке -->
-            <v-alert v-else-if="errorMessage" type="error" class="mb-4">
-              {{ errorMessage }}
-            </v-alert>
+                <!-- Сообщение об ошибке -->
+                <v-alert v-else-if="errorMessage" type="error" class="mb-4">
+                    {{ errorMessage }}
+                </v-alert>
 
-            <!-- Контакты сгруппированные по ЦА -->
-            <div v-else-if="groupedContacts.length > 0">
-              <v-expansion-panels>
-                <v-expansion-panel 
-                  v-for="(group, index) in groupedContacts" 
-                  :key="index"
-                >
-                  <v-expansion-panel-title>
-                    <v-row align="center">
-                      <v-col cols="8">
-                        <strong>{{ group.targetAudienceName }}</strong>
-                        <div class="text-caption text-medium-emphasis">
-                          Контактов: {{ group.contacts.length }}
-                        </div>
-                      </v-col>
-                      <v-col cols="4" class="text-right">
-                        <v-chip size="small" color="primary">
-                          {{ group.deals.length }} сделок
-                        </v-chip>
-                      </v-col>
-                    </v-row>
-                  </v-expansion-panel-title>
-                  
-                  <v-expansion-panel-text>
-
-                    <!-- Замена: v-card вместо v-expansion-panels для компаний -->
-                    <div v-if="group.companies && group.companies.length > 0" class="companies-container">
-                      <v-card 
-                        v-for="(company, companyIndex) in group.companies" 
-                        :key="companyIndex"
-                        class="mb-4"
-                        variant="outlined"
-                      >
-                        <v-card-title class="d-flex align-center">
-                          <v-icon class="mr-2">mdi-office-building</v-icon>
-                          <strong>
-                            <a 
-                              :href="`https://ittochka.bitrix24.ru/crm/company/details/${company.id}/`"
-                              class="link"
-                              target="_blank"
-                            >
-                              {{ company.name || 'Без компании' }}
-                            </a>
-                          </strong>
-                          <v-spacer></v-spacer>
-                          <v-chip size="small" color="secondary">
-                            {{ company.contacts.length }} конт.
-                          </v-chip>
-                        </v-card-title>
+                <!-- Отображение пользователей и их рассылок -->
+                <div v-else-if="userDistributions.length > 0">
+                    <!-- Для каждого пользователя -->
+                    <div v-for="(userDistribution, userIndex) in userDistributions" 
+                         :key="userIndex" 
+                         class="mb-6">
                         
-                        <v-card-text>
-                          <!-- Таблица контактов компании -->
-                          <v-table density="compact">
-                            <thead>
-                              <tr>
-                                <th>ФИО</th>
-                                <th>Должность</th>
-                                <th>Email</th>
-                                <th>Местоположение</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="contact in company.contacts" :key="contact.ID">
-                                <td>
-                                  <a 
-                                    :href="`https://ittochka.bitrix24.ru/crm/contact/details/${contact.ID}/`"
-                                    class="link"
-                                    target="_blank"
-                                  >
-                                    {{ contact.LAST_NAME }} 
-                                    {{ contact.NAME }} 
-                                    {{ contact.SECOND_NAME }}
-                                  </a>
-                                </td>
-                                <td>
-                                  <span v-if="contact.POST">
-                                    {{ contact.POST }}
-                                  </span>
-                                  <span v-else class="text-medium-emphasis">Не указана</span>
-                                </td>
-                                <td>
-                                  <span v-if="contact.EMAIL && contact.EMAIL.length > 0">
-                                    {{ contact.EMAIL[0].VALUE }}
-                                  </span>
-                                  <span v-else class="text-error">Нет email</span>
-                                </td>
-                                <td>
-                                  <span v-if="getFormattedLocation(contact)" style="white-space: pre-line;">
-                                    {{ getFormattedLocation(contact) }}
-                                  </span>
-                                  <span v-else class="text-medium-emphasis">Не указано</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </v-table>
-                        </v-card-text>
-                      </v-card>
+                        <!-- Заголовок пользователя -->
+                        <v-card variant="outlined" class="mb-2">
+                            <v-card-text class="pa-3">
+                                <div class="d-flex justify-space-between align-center">
+                                    <div>
+                                        <strong class="text-h6">{{ userDistribution.userName }}</strong>
+                                    </div>
+                                    <div class="text-caption text-medium-emphasis">
+                                        Рассылок: {{ userDistribution.distributions.length }}
+                                    </div>
+                                </div>
+                            </v-card-text>
+                        </v-card>
+                        
+                        <!-- Для каждой рассылки пользователя -->
+                        <div v-for="(distribution, distIndex) in userDistribution.distributions" 
+                             :key="distIndex" 
+                             class="mb-4">
+                            
+                            <!-- Заголовок рассылки -->
+                            <v-card variant="tonal" class="mb-2">
+                                <v-card-text class="pa-2">
+                                    <div class="d-flex justify-space-between align-center">
+                                        <div>
+                                            <strong>Рассылка {{ distIndex + 1 }}</strong>
+                                            <div class="text-caption">
+                                                ЦА рассылки: {{ distribution.distributionTargetAudience || 'Не указана' }}
+                                            </div>
+                                        </div>
+                                        <div class="text-caption text-medium-emphasis">
+                                            Компаний: {{ distribution.companies.length }}
+                                            <br>
+                                            Контактов: {{ distribution.totalContacts }}
+                                        </div>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
+                            
+                            <!-- Компании в рассылке -->
+                            <div v-for="(company, companyIndex) in distribution.companies" 
+                                 :key="companyIndex" 
+                                 class="mb-4">
+                                
+                                <!-- Заголовок компании -->
+                                <v-card variant="outlined" class="mb-2">
+                                    <v-card-text class="pa-2">
+                                        <div class="d-flex justify-space-between align-center">
+                                            <div>
+                                                <strong>{{ company.companyName || 'Без компании' }}</strong>
+                                            </div>
+                                            <div class="text-caption text-medium-emphasis">
+                                                Контактов: {{ company.contacts.length }}
+                                            </div>
+                                        </div>
+                                    </v-card-text>
+                                </v-card>
+                                
+                                <!-- Таблица контактов компании -->
+                                <v-table density="compact" class="company-contacts-table mb-4">
+                                    <thead>
+                                        <tr>
+                                            <th>ФИО</th>
+                                            <th>ЦА контакта</th>
+                                            <th>Должность</th>
+                                            <th>Email</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="contact in company.contacts" :key="contact.ID">
+                                            <td>
+                                                <a 
+                                                    :href="`https://ittochka.bitrix24.ru/crm/contact/details/${contact.ID}/`"
+                                                    class="link"
+                                                    target="_blank"
+                                                >
+                                                    {{ contact.LAST_NAME }} 
+                                                    {{ contact.NAME }} 
+                                                    {{ contact.SECOND_NAME }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span v-if="contact.CONTACT_TARGET_AUDIENCE && contact.CONTACT_TARGET_AUDIENCE !== 'Не указана'">
+                                                    {{ contact.CONTACT_TARGET_AUDIENCE }}
+                                                </span>
+                                                <span v-else class="text-medium-emphasis">Не указана</span>
+                                            </td>
+                                            <td>
+                                                <span v-if="contact.POST">
+                                                    {{ contact.POST }}
+                                                </span>
+                                                <span v-else class="text-medium-emphasis">Не указана</span>
+                                            </td>
+                                            <td>
+                                                <span v-if="contact.EMAIL && contact.EMAIL.length > 0">
+                                                    {{ contact.EMAIL[0].VALUE }}
+                                                </span>
+                                                <span v-else class="text-error">Нет email</span>
+                                            </td>
+                                            <td>
+                                                <v-btn
+                                                    icon
+                                                    size="x-small"
+                                                    :color="isExcluded(contact.ID) ? 'error' : 'success'"
+                                                    @click="toggleExcludeContact(contact.ID)"
+                                                    :title="isExcluded(contact.ID) ? 'Включить в рассылку' : 'Исключить из рассылки'"
+                                                >
+                                                    <v-icon v-if="isExcluded(contact.ID)">mdi-plus-circle</v-icon>
+                                                    <v-icon v-else>mdi-close-circle</v-icon>
+                                                </v-btn>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </v-table>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Контакты без компании -->
-                    <div v-if="group.contactsWithoutCompany && group.contactsWithoutCompany.length > 0">
-                      <v-divider class="my-4"></v-divider>
-                      <h4 class="mb-3">Контакты без компании</h4>
-                      <v-table density="compact">
-                        <thead>
-                          <tr>
-                            <th>Имя</th>
-                            <th>Email</th>
-                            <th>Должность</th>
-                            <th>Местоположение</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="contact in group.contactsWithoutCompany" :key="contact.ID">
-                            <td>
-                              {{ contact.NAME }} 
-                              {{ contact.LAST_NAME }} 
-                              {{ contact.SECOND_NAME }}
-                            </td>
-                            <td>
-                              <span v-if="contact.EMAIL && contact.EMAIL.length > 0">
-                                {{ contact.EMAIL[0].VALUE }}
-                              </span>
-                              <span v-else class="text-error">Нет email</span>
-                            </td>
-                            <td>
-                              <span v-if="contact.POST">
-                                {{ contact.POST }}
-                              </span>
-                              <span v-else class="text-medium-emphasis">Не указана</span>
-                            </td>
-                            <td>
-                              <span v-if="getFormattedLocation(contact)">
-                                {{ getFormattedLocation(contact) }}
-                              </span>
-                              <span v-else class="text-medium-emphasis">Не указано</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </v-table>
-                    </div>
-
-                  </v-expansion-panel-text>
-                </v-expansion-panel>
-              </v-expansion-panels>
-
-              <!-- Итоговая статистика -->
-              <v-alert type="info" class="mt-4">
-                Всего: {{ totalContacts }} контактов в {{ totalDeals }} сделках | 
-                Компаний: {{ totalCompanies }} | 
-                Контактов без компании: {{ totalContactsWithoutCompany }}
-              </v-alert>
-            </div>
-
-            <!-- Нет контактов -->
-            <v-alert v-else type="warning">
-              Контакты не найдены или мероприятие не содержит сделок
-            </v-alert>
-          </v-card-text>
+                <!-- Нет контактов -->
+                <v-alert v-else type="warning">
+                    Контакты не найдены или мероприятие не содержит сделок
+                </v-alert>
+            </v-card-text>
         </v-card>
-      </v-window-item>
+    </v-window-item>
     </v-window>
 
     <!-- Уведомление -->
@@ -251,7 +223,7 @@
 
 <script>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { callApi } from '../functions/callApi'
+import { callApi, getListElements } from '../functions/callApi'
 
 export default {
   setup() {
@@ -263,7 +235,8 @@ export default {
     const activeTab = ref('send')
     const form = ref(null)
     const errorMessage = ref('')
-    
+    const userDistributions = ref([])
+
     const entityInfo = reactive({
       ENTITY_VALUE_ID: null,
       ENTITY_ID: null
@@ -280,8 +253,373 @@ export default {
       color: 'success'
     })
 
-    const groupedContacts = ref([])
+    const deals = ref([])
+    const excludedContacts = ref(new Set());
+    const excludedContactsCount = computed(() => {
+          return excludedContacts.value.size
+    })
+// Метод для группировки сделок по пользователям и рассылкам
+// Метод для группировки сделок по пользователям и рассылкам
+const groupDealsByUserAndDistribution = async () => {
+    if (!deals.value.length) return []
+
+    try {
+        // Собираем все ID пользователей из сделок
+        const allUserIds = [...new Set(deals.value.map(deal => deal.ASSIGNED_BY_ID).filter(id => id))]
+        
+        // Получаем информацию о пользователях
+        const userCommands = allUserIds.map(userId => ({
+            method: 'user.get',
+            params: { ID: userId }
+        }))
+        
+        const userResults = await callBatch(userCommands)
+        
+        // Создаем Map пользователей
+        const userMap = new Map()
+        userResults.forEach((userData, index) => {
+            const userId = allUserIds[index]
+            if (userData && userData.length > 0) {
+                const user = userData[0]
+                userMap.set(userId, {
+                    ID: userId,
+                    NAME: user.NAME,
+                    LAST_NAME: user.LAST_NAME,
+                    SECOND_NAME: user.SECOND_NAME,
+                    FULL_NAME: `${user.LAST_NAME || ''} ${user.NAME || ''} ${user.SECOND_NAME || ''}`.trim()
+                })
+            }
+        })
+
+        // Группируем сделки по пользователям
+        const userGroups = new Map()
+        
+        deals.value.forEach(deal => {
+            const userId = deal.ASSIGNED_BY_ID
+            if (!userGroups.has(userId)) {
+                const userInfo = userMap.get(userId) || {
+                    ID: userId,
+                    FULL_NAME: `Пользователь ${userId}`
+                }
+                userGroups.set(userId, {
+                    user: userInfo,
+                    deals: []
+                })
+            }
+            userGroups.get(userId).deals.push(deal)
+        })
+
+        // Для каждого пользователя группируем сделки по рассылкам
+        const result = []
+        
+        for (const [userId, userGroup] of userGroups) {
+            // Группируем сделки по ID рассылки (поле UF_CRM_1765531909)
+            const distributionGroups = new Map()
+            
+            userGroup.deals.forEach(deal => {
+                const distributionId = deal.UF_CRM_1765531909 || 'no_distribution'
+                
+                if (!distributionGroups.has(distributionId)) {
+                    distributionGroups.set(distributionId, {
+                        distributionId,
+                        deals: []
+                    })
+                }
+                distributionGroups.get(distributionId).deals.push(deal)
+            })
+
+            // Преобразуем группы рассылок в нужный формат
+            const distributions = []
+
+            for (const [distId, distGroup] of distributionGroups) {
+                // Определяем ЦА рассылки - используем поле DEAL_TARGET_AUDIENCE
+                let distributionTargetAudience = 'Не указана'
+                if (distGroup.deals.length > 0) {
+                    const firstDeal = distGroup.deals[0];
+                    // ИСПРАВЛЕНО: обращаемся к DEAL_TARGET_AUDIENCE, который создается в loadContacts
+                    distributionTargetAudience = firstDeal.DEAL_TARGET_AUDIENCE || 'Не указана'
+                    
+                    // Если DEAL_TARGET_AUDIENCE не найден, проверяем UF_CRM_1753365812
+                    if (distributionTargetAudience === 'Не указана' && firstDeal.UF_CRM_1753365812) {
+                        // Получаем названия ЦА для UF_CRM_1753365812
+                        const dealTaIds = Array.isArray(firstDeal.UF_CRM_1753365812) 
+                            ? firstDeal.UF_CRM_1753365812 
+                            : [firstDeal.UF_CRM_1753365812]
+                        
+                        if (dealTaIds.length > 0) {
+                            const dealTaMap = await getTargetAudienceNames(dealTaIds)
+                            const targetAudienceNames = dealTaIds
+                                .map(id => dealTaMap.get(parseInt(id)))
+                                .filter(name => name)
+                            
+                            if (targetAudienceNames.length > 0) {
+                                distributionTargetAudience = targetAudienceNames.join(', ')
+                            }
+                        }
+                    }
+                }
+
+                // Собираем все уникальные контакты для этой рассылки
+                const uniqueContactsMap = new Map() // Используем Map для хранения уникальных контактов по ID
+                
+                distGroup.deals.forEach(deal => {
+                    if (deal.contacts && deal.contacts.length > 0) {
+                        deal.contacts.forEach(contact => {
+                            // Проверяем, нет ли уже такого контакта в Map
+                            if (!uniqueContactsMap.has(contact.ID)) {
+                                uniqueContactsMap.set(contact.ID, {
+                                    ...contact,
+                                    dealTitle: deal.TITLE || `Сделка #${deal.ID}`
+                                })
+                            }
+                        })
+                    }
+                })
+
+                // Преобразуем Map уникальных контактов в массив
+                const allContacts = Array.from(uniqueContactsMap.values())
+
+                // Группируем контакты по компаниям
+                const companyMap = new Map()
+                
+                allContacts.forEach(contact => {
+                    const companyId = contact.COMPANY_ID || 'no_company'
+                    const companyName = contact.COMPANY_TITLE || 'Без компании'
+                    const targetAudience = contact.companyTarget || 'Не указана'
+                    
+                    if (!companyMap.has(companyId)) {
+                        companyMap.set(companyId, {
+                            companyId,
+                            companyName,
+                            targetAudience,
+                            contacts: []
+                        })
+                    }
+                    
+                    // Добавляем контакт только если его еще нет в списке контактов компании
+                    const existingContact = companyMap.get(companyId).contacts.find(c => c.ID === contact.ID)
+                    if (!existingContact) {
+                        companyMap.get(companyId).contacts.push(contact)
+                    }
+                })
+
+                const totalContacts = allContacts.length
+
+                distributions.push({
+                    distributionId: distId,
+                    distributionTargetAudience,
+                    totalContacts,
+                    companies: Array.from(companyMap.values())
+                })
+            }
+
+            // Собираем все ЦА пользователя (уникальные из всех его рассылок)
+            const userTargetAudiences = [...new Set(
+                distributions.map(d => d.distributionTargetAudience)
+                    .filter(ta => ta !== 'Не указана')
+            )]
+
+            result.push({
+                userId: userId,
+                userName: userGroup.user.FULL_NAME,
+                targetAudiences: userTargetAudiences,
+                distributions: distributions
+            })
+        }
+
+        return result
+        
+    } catch (error) {
+        console.error('Ошибка группировки по пользователям:', error)
+        return []
+    }
+}
+// Вычисляемое свойство для группировки контактов по компаниям
+    const contactsByCompany = computed(() => {
+      if (!deals.value.length) return []
+      
+      // Собираем все контакты из всех сделок
+      const allContacts = []
+      deals.value.forEach(deal => {
+        if (deal.contacts && deal.contacts.length > 0) {
+          deal.contacts.forEach(contact => {
+            // Добавляем информацию о сделке к контакту
+            allContacts.push({
+              ...contact,
+              dealTitle: deal.TITLE || `Сделка #${deal.ID}`
+            })
+          })
+        }
+      })
+      
+      // Группируем контакты по компании
+      const companyMap = new Map()
+      
+      allContacts.forEach(contact => {
+        const companyId = contact.COMPANY_ID || 'no_company'
+        const companyName = contact.COMPANY_TITLE || 'Без компании'
+        const targetAudience = contact.companyTarget || 'Не указана'
+        
+        if (!companyMap.has(companyId)) {
+          companyMap.set(companyId, {
+            companyId,
+            companyName,
+            targetAudience,
+            contacts: []
+          })
+        }
+        
+        companyMap.get(companyId).contacts.push(contact)
+      })
+      
+      // Преобразуем Map в массив
+      return Array.from(companyMap.values())
+    })
     
+    const isExcluded = (contactId) => {
+      return excludedContacts.value.has(+contactId)
+    }
+
+    const toggleExcludeContact = async (contactId) => {
+      const wasExcluded = excludedContacts.value.has(+contactId)
+      
+      if (wasExcluded) {
+        excludedContacts.value.delete(+contactId)
+      } else {
+        excludedContacts.value.add(+contactId)
+      }
+      
+      // Сохраняем изменения в поле сущности
+      await saveExcludedContacts()
+      showSnackbar(
+        wasExcluded ? 'Контакт включен в рассылку' : 'Контакт исключен из рассылки',
+        wasExcluded ? 'success' : 'info'
+      )
+    }
+const filteredDeals = computed(() => {
+      if (!deals.value.length) return []
+      
+      return deals.value.map(deal => {
+        const filteredDeal = { ...deal }
+        filteredDeal.contacts = filteredDeal.contacts.filter(contact => !excludedContacts.value.has(+contact.ID))
+        return filteredDeal
+      }).filter(deal => deal.contacts.length > 0)
+    })
+
+const getExcludedCount = (deal) => {
+      if (!deal.contacts) return 0
+      
+      return deal.contacts.filter(contact => excludedContacts.value.has(+contact.ID)).length
+    }
+
+    // Сохранение исключенных контактов в поле сущности
+    const saveExcludedContacts = async () => {
+      try {
+        const excludedArray = Array.from(excludedContacts.value)
+        const excludedString = excludedArray.join(',')
+        
+        if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
+          // Для мероприятия
+          await new Promise((resolve) => {
+            BX24.callMethod(
+              "crm.item.update",
+              {
+                id: entityInfo.ENTITY_VALUE_ID,
+                entityTypeId: 1052,
+                fields: {
+                  ufCrm38ExcludedContacts: excludedString
+                }
+              },
+              function(result) {
+                if (result.error()) {
+                  console.error('Ошибка сохранения исключенных контактов:', result.error())
+                }
+                resolve()
+              }
+            )
+          })
+        } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
+          // Для сделки
+          await new Promise((resolve) => {
+            BX24.callMethod(
+              "crm.deal.update",
+              {
+                id: entityInfo.ENTITY_VALUE_ID,
+                fields: {
+                  CONTACT_ID: excludedString
+                }
+              },
+              function(result) {
+                if (result.error()) {
+                  console.error('Ошибка сохранения исключенных контактов:', result.error())
+                }
+                resolve()
+              }
+            )
+          })
+        }
+      } catch (error) {
+        console.error('Ошибка при сохранении исключенных контактов:', error)
+      }
+    }
+
+    // Загрузка исключенных контактов из поля сущности
+    const loadExcludedContacts = async () => {
+      try {
+        let excludedString = ''
+        
+        if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
+          // Для мероприятия
+          const eventData = await new Promise((resolve) => {
+            BX24.callMethod(
+              "crm.item.get",
+              {
+                id: entityInfo.ENTITY_VALUE_ID,
+                entityTypeId: 1052
+              },
+              function(result) {
+                if (result.error()) {
+                  console.error('Ошибка загрузки данных мероприятия:', result.error())
+                  resolve({})
+                } else {
+                  resolve(result.data())
+                }
+              }
+            )
+          })
+          excludedString = eventData.item.ufCrm38ExcludedContacts || ''
+        } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
+          // Для сделки
+          const dealData = await new Promise((resolve) => {
+            BX24.callMethod(
+              "crm.deal.get",
+              {
+                id: entityInfo.ENTITY_VALUE_ID
+              },
+              function(result) {
+                if (result.error()) {
+                  console.error('Ошибка загрузки данных сделки:', result.error())
+                  resolve({})
+                } else {
+                  resolve(result.data())
+                }
+              }
+            )
+          })
+          excludedString = dealData.CONTACT_ID || ''
+        }
+        
+        // Преобразуем строку обратно в Set
+        if (excludedString) {
+          const excludedArray = excludedString.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+          excludedContacts.value = new Set(excludedArray)
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке исключенных контактов:', error)
+      }
+    }
+
+
     const requiredRules = [
       v => !!v || 'Обязательное поле',
       v => (v && v.trim().length > 0) || 'Поле не может быть пустым'
@@ -293,27 +631,11 @@ export default {
 
     // Вычисляемые свойства
     const isFormValid = computed(() => {
-      return formData.input.trim().length > 0 && formData.files.length > 0
+      return formData.input && formData.input.length > 0 && formData.files && formData.files.length > 0
     })
 
     const totalContacts = computed(() => {
-      return groupedContacts.value.reduce((total, group) => total + group.contacts.length, 0)
-    })
-
-    const totalDeals = computed(() => {
-      return groupedContacts.value.reduce((total, group) => total + group.deals.length, 0)
-    })
-
-    const totalCompanies = computed(() => {
-      return groupedContacts.value.reduce((total, group) => {
-        return total + (group.companies ? group.companies.length : 0)
-      }, 0)
-    })
-
-    const totalContactsWithoutCompany = computed(() => {
-      return groupedContacts.value.reduce((total, group) => {
-        return total + (group.contactsWithoutCompany ? group.contactsWithoutCompany.length : 0)
-      }, 0)
+      return deals.value.reduce((total, deal) => total + deal.contacts.length, 0)
     })
 
     // Методы
@@ -377,103 +699,30 @@ const callBatch = async (commands, maxBatchSize = 50) => {
 }
 
     // Оптимизированный метод получения сделок мероприятия
-    const getEventDeals = async (eventId) => {
+    const getEventDeals = async (eventId, currentUserId) => {
       try {
-        // Получаем поле ufCrm_AddedDeals мероприятия с использованием batch
-        const eventData = (await callApi(
-          "crm.item.list", 
-          { id: eventId},
-          ["ufCrm38_AddedDeals"],
-          1052 
-        ))[0];
-        
-        const addedDeals = eventData.ufCrm38_AddedDeals.split(" / ");
+        const filter = {
+          UF_CRM_1742797326: eventId,
+          CATEGORY_ID: "32",
+          STAGE_ID: "C32:NEW"
+        };
+        if (currentUserId !== 1612) {
+          data.ASSIGNED_BY_ID = currentUserId;
+        }
+
+        const addedDeals = await callApi(
+          "crm.deal.list",
+          filter,
+          ["ID", "TITLE", "UF_CRM_1753365812", 'ASSIGNED_BY_ID']
+        );
         
         if (!addedDeals || addedDeals.length === 0) {
           return []
         }
 
-        const dealsMap = new Map()
-        
-        addedDeals.forEach(item => {
-          const [targetAudiencePart, dealsPart] = item.split(' - ')
-          if (targetAudiencePart && dealsPart) {
-            const targetAudienceIds = targetAudiencePart.split(',').map(id => parseInt(id.trim()))
-            const dealIds = dealsPart.split(',').map(id => parseInt(id.trim()))
-            
-            targetAudienceIds.forEach(taId => {
-              if (!dealsMap.has(taId)) {
-                dealsMap.set(taId, [])
-              }
-              dealsMap.get(taId).push(...dealIds)
-            })
-          }
-        })
-
-        return dealsMap
+        return addedDeals
       } catch (error) {
         console.error('Ошибка получения сделок мероприятия:', error)
-        throw error
-      }
-    }
-
-    // Оптимизированный метод получения названий целевых аудиторий
-    const getTargetAudienceNames = async (targetAudienceIds) => {
-      try {
-        const uniqueIds = [...new Set(targetAudienceIds)]
-        const commands = uniqueIds.map(id => ({
-          method: 'lists.element.get',
-          params: {
-            'IBLOCK_TYPE_ID': 'lists',
-            'IBLOCK_ID': '216',
-            'filter': { 'ID': id }
-          }
-        }))
-        
-        const results = await callBatch(commands)
-        
-        const nameMap = new Map()
-        results.forEach((result, index) => {
-          const id = uniqueIds[index]
-          if (result && result.length > 0) {
-            nameMap.set(id, result[0].NAME || `ЦА #${id}`)
-          } else {
-            nameMap.set(id, `ЦА #${id}`)
-          }
-        })
-        
-        return nameMap
-      } catch (error) {
-        console.error('Ошибка получения названий ЦА:', error)
-        // Возвращаем мапу с дефолтными значениями
-        const defaultMap = new Map()
-        targetAudienceIds.forEach(id => {
-          defaultMap.set(id, `ЦА #${id}`)
-        })
-        return defaultMap
-      }
-    }
-
-    // Оптимизированный метод получения информации о сделках
-    const getDealsInfo = async (dealIds) => {
-      try {
-        const uniqueDealIds = [...new Set(dealIds)]
-        const commands = uniqueDealIds.map(dealId => ({
-          method: 'crm.deal.get',
-          params: { id: dealId }
-        }))
-        
-        const results = await callBatch(commands)
-        
-        const dealInfoMap = new Map()
-        results.forEach((dealInfo, index) => {
-          const dealId = uniqueDealIds[index]
-          dealInfoMap.set(dealId, dealInfo || {})
-        })
-        
-        return dealInfoMap
-      } catch (error) {
-        console.error('Ошибка получения информации о сделках:', error)
         throw error
       }
     }
@@ -481,236 +730,373 @@ const callBatch = async (commands, maxBatchSize = 50) => {
     // Оптимизированный метод получения контактов сделок
     const getDealsContacts = async (dealIds) => {
       try {
+        console.log(dealIds);
         const commands = dealIds.map(dealId => ({
           method: 'crm.deal.contact.items.get',
           params: { id: dealId }
         }))
         
         const results = await callBatch(commands)
-        
+                
         const contactsMap = new Map()
         results.forEach((contactItems, index) => {
           const dealId = dealIds[index]
           const contactIds = contactItems ? contactItems.map(item => item.CONTACT_ID) : []
           contactsMap.set(dealId, contactIds)
         })
-        
+
         return contactsMap
       } catch (error) {
         console.error('Ошибка получения контактов сделок:', error)
         throw error
       }
     }
-const getFormattedLocation = (contact) => {
-  const parts = [];
-  if (contact.DISTRICT_TITLE && contact.DISTRICT_TITLE.length > 0) {
-    parts.push(`Федеральный округ - ${contact.DISTRICT_TITLE}`);
-  }
-  
-  if (contact.REGION_TITLE && contact.REGION_TITLE.length > 0) {
-    parts.push(`Регион - ${contact.REGION_TITLE}`);
-  }
-  
-  if (contact.CITY_TITLE && contact.CITY_TITLE.length > 0) {
-    parts.push(`Город - ${contact.CITY_TITLE}`);
-  }
-  
-  return parts.length > 0 ? parts.map(part => part + ' /').join('\n') : null;
-}
-    // Оптимизированный метод получения детальной информации о контактах
-   const getContactsDetails = async (contactIds) => {
+
+const getTargetAudienceNames = async (targetAudienceIds) => {
   try {
-    const uniqueContactIds = [...new Set(contactIds)];
+    const uniqueIds = [...new Set(targetAudienceIds)].map(id => parseInt(id)).filter(id => !isNaN(id));
     
-    // Получаем данные о локациях
-    const { citiesMap, regionsMap, districtsMap } = await getLocationData();
+    if (uniqueIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await getListElements(216, { ID: uniqueIds }, ["ID", "NAME"]);
     
-    // Получаем базовую информацию о контактах
-    const contactCommands = uniqueContactIds.map(contactId => ({
-      method: 'crm.contact.get',
-      params: { id: contactId }
-    }));
+    const nameMap = new Map();
     
-    const contactResults = await callBatch(contactCommands);
-    
-    // Собираем ID компаний для дополнительных запросов
-    const companyIds = [];
-    const contactDetailsMap = new Map();
-    
-    contactResults.forEach((contact, index) => {
-      const contactId = uniqueContactIds[index];
-      if (contact && contact.ID) {
-        // Заменяем ID на названия для локаций
-        
-        if (contact.UF_CRM_1753083765) { // ID города
-          contact.CITY_TITLE = citiesMap.get(parseInt(contact.UF_CRM_1753083765)) || contact.UF_CRM_1753083765;
-        }
-        if (contact.UF_CRM_1756304636) { // ID региона
-          contact.REGION_TITLE = regionsMap.get(parseInt(contact.UF_CRM_1756304636)) || contact.UF_CRM_1756304636;
-        }
-        if (contact.UF_CRM_1756304661) { // ID федерального округа
-          contact.DISTRICT_TITLE = districtsMap.get(parseInt(contact.UF_CRM_1756304661)) || contact.UF_CRM_1756304661;
-        }
-        
-        contactDetailsMap.set(contactId, contact);
-        if (contact.COMPANY_ID) {
-          companyIds.push(contact.COMPANY_ID);
-        }
+    // Исправляем: сопоставляем по ID элемента
+    results.forEach((result) => {
+      if (result && result.ID) {
+        const id = parseInt(result.ID);
+        nameMap.set(id, result.NAME || `ЦА #${id}`);
       }
     });
+
+    // Добавляем значения для ID, которые не нашлись
+    uniqueIds.forEach(id => {
+      if (!nameMap.has(id)) {
+        nameMap.set(id, `ЦА #${id}`);
+      }
+    });
+
+    return nameMap;
+  } catch (error) {
+    console.error('Ошибка получения названий ЦА:', error);
+    const defaultMap = new Map();
+    targetAudienceIds.forEach(id => {
+      const numId = parseInt(id);
+      if (!isNaN(numId)) {
+        defaultMap.set(numId, `ЦА #${numId}`);
+      }
+    });
+    return defaultMap;
+  }
+}
+
+    // Оптимизированный метод получения детальной информации о контактах
+// Исправленный метод получения детальной информации о контактах
+const getContactsDetails = async (contactIds) => {
+  try {
+    const uniqueContactIds = [...new Set(contactIds)];
+
+    const chunks = [];
+    const chunkSize = 50;
+    // Разделяем на чанки
+    for (let i = 0; i < uniqueContactIds.length; i += chunkSize) {
+      chunks.push(uniqueContactIds.slice(i, i + chunkSize));
+    }
     
-    // ... остальная часть метода без изменений
+    const contactResults = [];
+    
+    // Выполняем запросы последовательно
+    for (const chunk of chunks) {
+      try {
+        // ДОБАВЛЯЕМ UF_CRM_1753364801 В ВЫБОРКУ
+        const chunkResults = await callApi('crm.contact.list', { ID: chunk }, [
+          "ID", "EMAIL", "NAME", "COMPANY_ID", "LAST_NAME", 
+          "FIRST_NAME", "SECOND_NAME", "POST", "UF_CRM_1753364801" // ДОБАВЛЕНО
+        ]);
+        // Добавляем все результаты
+        if (Array.isArray(chunkResults)) {
+          contactResults.push(...chunkResults);
+        }
+      } catch (error) {
+        console.error(`Ошибка при выполнении запроса контактов для чанка:`, error);
+      }
+    }
+
+    // Исправляем: создаем Map, где ключ - ID контакта
+    const contactDetailsMap = new Map();
+    
+    // Заполняем Map данными контактов
+    contactResults.forEach((contact) => {
+      if (contact && contact.ID) {
+        contactDetailsMap.set(parseInt(contact.ID), contact);
+      }
+    });
+
+    // Собираем ID компаний для дополнительных запросов
+    const companyIds = [];
+    
+    // Проходим по всем запрошенным контактам и собираем ID компаний
+    uniqueContactIds.forEach(contactId => {
+      const contact = contactDetailsMap.get(parseInt(contactId));
+      if (contact && contact.COMPANY_ID) {
+        companyIds.push(parseInt(contact.COMPANY_ID));
+      }
+    });
+
     // Получаем информацию о компаниях
     if (companyIds.length > 0) {
       const uniqueCompanyIds = [...new Set(companyIds)];
-      const companyCommands = uniqueCompanyIds.map(companyId => ({
-        method: 'crm.company.get',
-        params: { id: companyId }
-      }));
+
+      const companyChunks = [];
+      // Разделяем на чанки
+      for (let i = 0; i < uniqueCompanyIds.length; i += chunkSize) {
+        companyChunks.push(uniqueCompanyIds.slice(i, i + chunkSize));
+      }
       
-      const companyResults = await callBatch(companyCommands);
+      const companyResults = [];
       
+      // Выполняем запросы последовательно
+      for (const chunk of companyChunks) {
+        try {
+          const chunkResults = await callApi('crm.company.list', { ID: chunk }, ["ID", "TITLE", "UF_CRM_1753364407"]);
+          if (Array.isArray(chunkResults)) {
+            companyResults.push(...chunkResults);
+          }
+        } catch (error) {
+          console.error(`Ошибка при выполнении запроса компаний для чанка:`, error);
+        }
+      }
+
+      // Исправляем: создаем Map для компаний, где ключ - ID компании
       const companyMap = new Map();
-      companyResults.forEach((company, index) => {
-        const companyId = uniqueCompanyIds[index];
+      companyResults.forEach((company) => {
         if (company && company.ID) {
-          companyMap.set(companyId, company);
+          companyMap.set(parseInt(company.ID), company);
         }
       });
+
+      // Получаем названия целевых аудиторий компаний
+      const allCompanyTaIds = companyResults
+        .filter(company => company.UF_CRM_1753364407)
+        .flatMap(company => company.UF_CRM_1753364407 || []);
       
-      // Обновляем контакты с названиями компаний
-      contactDetailsMap.forEach((contact, contactId) => {
-        if (contact.COMPANY_ID && companyMap.has(contact.COMPANY_ID)) {
-          contact.COMPANY_TITLE = companyMap.get(contact.COMPANY_ID).TITLE;
+      const companyTaMap = await getTargetAudienceNames(allCompanyTaIds);
+      
+      // Обновляем компании с названиями целевых аудиторий
+      companyResults.forEach((company) => {
+        if (company && company.ID && company.UF_CRM_1753364407) {
+          const taIds = company.UF_CRM_1753364407 || [];
+          company.targetAudienceNames = taIds
+            .map(id => companyTaMap.get(parseInt(id)))
+            .filter(name => name)
+            .join(', ');
+        }
+      });
+
+      // Обновляем Map компаний
+      companyResults.forEach((company) => {
+        if (company && company.ID) {
+          companyMap.set(parseInt(company.ID), company);
+        }
+      });
+
+      // Обновляем контакты с названиями компаний и целевых аудиторий
+      uniqueContactIds.forEach(contactId => {
+        const contact = contactDetailsMap.get(parseInt(contactId));
+        if (contact && contact.COMPANY_ID) {
+          const companyId = parseInt(contact.COMPANY_ID);
+          if (companyMap.has(companyId)) {
+            const company = companyMap.get(companyId);
+            contact.COMPANY_TITLE = company.TITLE || 'Без названия';
+            contact.companyTarget = company.targetAudienceNames || 'Не указана';
+          }
         }
       });
     }
-    
+
     return contactDetailsMap;
   } catch (error) {
     console.error('Ошибка получения детальной информации о контактах:', error);
     throw error;
   }
 }
-    // Переписанный метод loadContacts с использованием batch
-    const loadContacts = async () => {
-      if (!isValidEntity.value) return
 
-      loadingContacts.value = true
-      errorMessage.value = ''
-      groupedContacts.value = []
+const loadContacts = async () => {
+  //if (!isValidEntity.value) return
 
-      try {
-        let eventId
+  loadingContacts.value = true
+  errorMessage.value = ''
+  deals.value = []
 
-        if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
-          eventId = entityInfo.ENTITY_VALUE_ID
-        } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
-          const dealInfo = await new Promise((resolve) => {
-            BX24.callMethod(
-              "crm.deal.get",
-              { id: entityInfo.ENTITY_VALUE_ID },
-              function(result) {
-                if (result.error()) {
-                  console.error(result.error())
-                  resolve({})
-                } else {
-                  resolve(result.data())
-                }
-              }
-            )
-          })
-          eventId = dealInfo.UF_CRM_1742797326
-        }
-
-        if (!eventId) {
-          errorMessage.value = 'Не удалось определить мероприятие'
-          return
-        }
-
-        // Получаем сделки мероприятия
-        const dealsMap = await getEventDeals(eventId)
-
-        if (dealsMap.size === 0) {
-          errorMessage.value = 'Мероприятие не содержит сделок'
-          return
-        }
-
-        // Собираем все ID для batch-запросов
-        const allTargetAudienceIds = Array.from(dealsMap.keys())
-        const allDealIds = Array.from(dealsMap.values()).flat()
-        
-        // Получаем названия целевых аудиторий
-        const targetAudienceNameMap = await getTargetAudienceNames(allTargetAudienceIds)
-        
-        // Получаем информацию о всех сделках
-        const dealsInfoMap = await getDealsInfo(allDealIds)
-        
-        // Получаем контакты всех сделок
-        const dealsContactsMap = await getDealsContacts(allDealIds)
-        
-        // Собираем все ID контактов
-        const allContactIds = Array.from(dealsContactsMap.values()).flat()
-        
-        // Получаем детальную информацию о всех контактах
-        const contactsDetailsMap = await getContactsDetails(allContactIds)
-
-        // Группируем контакты по целевым аудиториям
-        const groupedData = []
-
-        for (const [targetAudienceId, dealIds] of dealsMap.entries()) {
-          const targetAudienceName = targetAudienceNameMap.get(targetAudienceId)
-          
-          const group = {
-            targetAudienceId,
-            targetAudienceName,
-            deals: [],
-            contacts: []
-          }
-
-          // Обрабатываем сделки для текущей ЦА
-          for (const dealId of dealIds) {
-            const dealInfo = dealsInfoMap.get(dealId)
-            if (dealInfo && dealInfo.ID) {
-              group.deals.push(dealInfo)
-
-              // Добавляем контакты сделки
-              const contactIds = dealsContactsMap.get(dealId) || []
-              contactIds.forEach(contactId => {
-                const contactDetails = contactsDetailsMap.get(contactId)
-                if (contactDetails && !group.contacts.some(c => c.ID === contactId)) {
-                  group.contacts.push(contactDetails)
-                }
-              })
-            }
-          }
-
-          // Группируем контакты по компаниям
-          const { companies, contactsWithoutCompany } = groupContactsByCompanies(group.contacts)
-          group.companies = companies
-          group.contactsWithoutCompany = contactsWithoutCompany
-
-          groupedData.push(group)
-        }
-
-        groupedContacts.value = groupedData
-
-      } catch (error) {
-        console.error('Ошибка загрузки контактов:', error)
-        errorMessage.value = 'Ошибка загрузки контактов: ' + error.message
-      } finally {
-        loadingContacts.value = false
-      }
+  try {
+    let eventId
+    console.log(entityInfo);
+    if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
+      eventId = entityInfo.ENTITY_VALUE_ID
+    } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
+      const dealInfo = await callApi(
+          "crm.deal.get",
+          { id: entityInfo.ENTITY_VALUE_ID },
+          ["UF_CRM_1742797326"] // ДОБАВЛЕНО
+        )
+      eventId = dealInfo.UF_CRM_1742797326
     }
 
+    if (!eventId) {
+      errorMessage.value = 'Не удалось определить мероприятие'
+      return
+    }
+
+    const currentUserId = await getCurrentUserId()
+
+    // Получаем сделки мероприятия с фильтром
+    const eventDeals = await getEventDeals(eventId, currentUserId)
+
+    if (eventDeals.length === 0) {
+      errorMessage.value = 'Мероприятие не содержит подходящих сделок'
+      return
+    }
+
+    // Собираем все ID для batch-запросов
+    const allDealIds = eventDeals.map(deal => deal.ID)
+
+    // Получаем контакты всех сделок
+    const dealsContactsMap = await getDealsContacts(allDealIds)
+    
+    // Собираем все ID контактов
+    const allContactIds = Array.from(dealsContactsMap.values()).flat()
+            
+    // Получаем детальную информацию о всех контактах
+    const contactsDetailsMap = await getContactsDetails(allContactIds)
+    
+    // Получаем названия целевых аудиторий для контактов и сделок
+    const allContactTargetAudienceIds = []
+    const allDealTargetAudienceIds = []
+    
+    // Собираем ID целевых аудиторий из контактов
+    allContactIds.forEach(contactId => {
+      const contact = contactsDetailsMap.get(contactId)
+      if (contact && contact.UF_CRM_1753364801) {
+        const taIds = Array.isArray(contact.UF_CRM_1753364801) ? contact.UF_CRM_1753364801 : [contact.UF_CRM_1753364801]
+        allContactTargetAudienceIds.push(...taIds)
+      }
+    })
+    
+    // Собираем ID целевых аудиторий из сделок
+    eventDeals.forEach(deal => {
+      if (deal.UF_CRM_1753365812) {
+        const taIds = Array.isArray(deal.UF_CRM_1753365812) ? deal.UF_CRM_1753365812 : [deal.UF_CRM_1753365812]
+        allDealTargetAudienceIds.push(...taIds)
+      }
+    })
+    
+    // Получаем названия целевых аудиторий
+    const contactTaMap = await getTargetAudienceNames(allContactTargetAudienceIds)
+    const dealTaMap = await getTargetAudienceNames(allDealTargetAudienceIds)
+
+    // Формируем список сделок с контактами
+    const dealsData = []
+
+    for (const deal of eventDeals) {
+      const dealObj = {
+        ...deal,
+        contacts: []
+      }
+
+      const contactIds = dealsContactsMap.get(deal.ID) || []
+      contactIds.forEach(contactId => {
+        const contactDetails = contactsDetailsMap.get(contactId)
+        if (contactDetails) {
+          // Добавляем информацию о целевой аудитории контакта
+          let contactTargetAudience = 'Не указана'
+          
+          if (contactDetails.UF_CRM_1753364801) {
+            const taIds = Array.isArray(contactDetails.UF_CRM_1753364801) 
+              ? contactDetails.UF_CRM_1753364801 
+              : [contactDetails.UF_CRM_1753364801]
+            
+            // Получаем названия целевых аудиторий контакта
+            const targetAudienceNames = taIds
+              .map(id => contactTaMap.get(parseInt(id)))
+              .filter(name => name)
+            
+            if (targetAudienceNames.length > 0) {
+              contactTargetAudience = targetAudienceNames.join(', ')
+            }
+          }
+          
+          // Добавляем информацию о целевой аудитории сделки
+          let dealTargetAudience = 'Не указана'
+          if (deal.UF_CRM_1753365812) {
+            const dealTaIds = Array.isArray(deal.UF_CRM_1753365812) 
+              ? deal.UF_CRM_1753365812 
+              : [deal.UF_CRM_1753365812]
+            
+            const dealTargetAudienceNames = dealTaIds
+              .map(id => dealTaMap.get(parseInt(id)))
+              .filter(name => name)
+            
+            if (dealTargetAudienceNames.length > 0) {
+              dealTargetAudience = dealTargetAudienceNames.join(', ')
+            }
+          }
+          
+          // Сохраняем обе целевые аудитории в контакте
+          const enrichedContact = {
+            ...contactDetails,
+            CONTACT_TARGET_AUDIENCE: contactTargetAudience,
+            DEAL_TARGET_AUDIENCE: dealTargetAudience,
+            dealTitle: deal.TITLE || `Сделка #${deal.ID}`
+          }
+          
+          dealObj.contacts.push(enrichedContact)
+        }
+      })
+
+      if (dealObj.contacts.length > 0) {
+        dealsData.push(dealObj)
+      }
+    }
+    console.log(eventDeals);
+    deals.value = dealsData
+    if (deals.value.length > 0) {
+      userDistributions.value = await groupDealsByUserAndDistribution()
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки контактов:', error)
+    errorMessage.value = 'Ошибка загрузки контактов: ' + error.message
+  } finally {
+    loadingContacts.value = false
+  }
+}
     const checkEntityValidity = async () => {
       try {
-        entityInfo.ENTITY_VALUE_ID = BX24.placement.info().options.ID;
-        entityInfo.ENTITY_ID = BX24.placement.info().placement;
+        try {
+            // Пробуем получить значения переменных
+            entityInfo.ENTITY_VALUE_ID = BX24.placement.info().options.ID;
+            entityInfo.ENTITY_ID = BX24.placement.info().placement;
+        } catch (error) {
+            entityInfo.ENTITY_VALUE_ID = 108;
+            entityInfo.ENTITY_ID = 'CRM_DYNAMIC_1052_DETAIL_TAB';
+        }
+        
+        if(entityInfo.ENTITY_VALUE_ID === undefined){
+          entityInfo.ENTITY_VALUE_ID = 108;
+        }
+        console.log(entityInfo.ENTITY_VALUE_ID);
+        if(entityInfo.ENTITY_ID = "DEFAULT"){
+          entityInfo.ENTITY_ID = 'CRM_DYNAMIC_1052_DETAIL_TAB';
+        }
 
         const validEntityTypes = ['CRM_DYNAMIC_1052_DETAIL_TAB', 'CRM_DEAL_DETAIL_TAB']
         isValidEntity.value = validEntityTypes.includes(entityInfo.ENTITY_ID)
-
+        if (isValidEntity.value) {
+          // Загружаем исключенные контакты при инициализации
+          await loadExcludedContacts()
+        }
       } catch (error) {
         console.error('Ошибка при проверке сущности:', error)
         isValidEntity.value = false
@@ -719,162 +1105,6 @@ const getFormattedLocation = (contact) => {
       }
     }
 
-    const getTargetAudienceName = async (targetAudienceId) => {
-      try {
-        // Загружаем мероприятия при монтировании компонента
-        const targetAudience = await new Promise((resolve, reject) => {
-          BX24.callMethod(
-            'lists.element.get',
-            {
-              'IBLOCK_TYPE_ID': 'lists',
-              'IBLOCK_ID': '216',
-            },
-            (result) => {
-              if (result.error()) {
-                console.error("Error: ", result.error());
-                reject(result.error());
-              } else {
-                //this.events = result.data();
-                resolve(result.data());
-              }
-            }
-          );
-        });
-
-        return targetAudience.title || `ЦА #${targetAudienceId}`
-      } catch (error) {
-        console.error('Ошибка получения названия ЦА:', error)
-        return `ЦА #${targetAudienceId}`
-      }
-    }
-
-    const getDealContacts = async (dealId) => {
-      try {
-        // Получаем сделку с контактами
-        const deal = await new Promise((resolve) => {
-            BX24.callMethod(
-              "crm.deal.get",
-              { id: dealId },
-              function(result) {
-                if (result.error()) {
-                  console.error(result.error())
-                  resolve({})
-                } else {
-                  resolve(result.data())
-                }
-              }
-            )
-          })
-        if (!deal.CONTACT_ID) {
-          return []
-        }
-
-        // Получаем контакты сделки
-        const contactsIds = (await new Promise((resolve) => {
-                  BX24.callMethod(
-                    "crm.deal.contact.items.get",
-                    { id: deal.ID },
-                    function(result) {
-                      if (result.error()) {
-                        console.error(result.error())
-                        resolve({})
-                      } else {
-                        console.log(result.data())
-                        resolve(result.data().map(item => item.CONTACT_ID))
-                      }
-                    }
-                  )
-                }));
-                console.log(contactsIds);
-             const contacts = contactsIds.length > 0 ? await callApi("crm.contact.list", {"ID": contactsIds}, null) : null;
-
-        // Получаем названия компаний и дополнительную информацию
-        const contactsWithDetails = await Promise.all(
-          contacts.map(async contact => {
-            if (contact.COMPANY_ID) {
-              try {
-                const company = await new Promise((resolve) => {
-            BX24.callMethod(
-              "crm.company.get",
-              { id: contact.COMPANY_ID },
-              function(result) {
-                if (result.error()) {
-                  console.error(result.error())
-                  resolve({})
-                } else {
-                  resolve(result.data())
-                }
-              }
-            )
-          })
-
-                contact.COMPANY_TITLE = company.TITLE
-              } catch (error) {
-                console.error('Ошибка получения компании:', error)
-                contact.COMPANY_TITLE = null
-              }
-            }
-            
-            // Получаем телефоны контакта
-            try {
-              const contactDetails = await new Promise((resolve) => {
-                BX24.callMethod(
-                  "crm.contact.get",
-                  { id: contact.ID },
-                  function(result) {
-                    if (result.error()) {
-                      console.error(result.error())
-                      resolve({})
-                    } else {
-                      resolve(result.data())
-                    }
-                  }
-                )
-              })
-              contact.PHONE = contactDetails.PHONE || []
-            } catch (error) {
-              console.error('Ошибка получения телефона контакта:', error)
-              contact.PHONE = []
-            }
-            
-            return contact
-          })
-        )
-
-        return contactsWithDetails
-      } catch (error) {
-        console.error('Ошибка получения контактов сделки:', error)
-        return []
-      }
-    }
-
-    // Группировка контактов по компаниям
-    const groupContactsByCompanies = (contacts) => {
-      const companiesMap = new Map()
-      const contactsWithoutCompany = []
-
-      contacts.forEach(contact => {
-        if (contact.COMPANY_ID && contact.COMPANY_TITLE) {
-          if (!companiesMap.has(contact.COMPANY_ID)) {
-            companiesMap.set(contact.COMPANY_ID, {
-              id: contact.COMPANY_ID,
-              name: contact.COMPANY_TITLE,
-              contacts: []
-            })
-          }
-          companiesMap.get(contact.COMPANY_ID).contacts.push(contact)
-        } else {
-          contactsWithoutCompany.push(contact)
-        }
-      })
-
-      return {
-        companies: Array.from(companiesMap.values()),
-        contactsWithoutCompany
-      }
-    }
-
-    // ... остальные методы остаются без изменений
     const getCurrentUser = () => {
       return new Promise((resolve) => {
         BX24.callMethod(
@@ -929,231 +1159,392 @@ const getFormattedLocation = (contact) => {
       snackbar.color = color
       snackbar.show = true
     }
-const getLocationData = async () => {
-  try {
-    // Получаем города
-    const cities = (await callApi("crm.item.list", {}, ["id", "title"], 1094));
-    const citiesMap = new Map(cities.map(city => [city.id, city.title]));
-    
-    // Получаем регионы (предполагаем, что они в списке с ID 1053)
-    const regions = (await callApi("crm.item.list", {}, ["id", "title"], 1108));
-    const regionsMap = new Map(regions.map(region => [region.id, region.title]));
-    
-    // Получаем федеральные округа (предполагаем, что они в списке с ID 1054)
-    const districts = (await callApi("crm.item.list", {}, ["id", "title"], 1112));
-    const districtsMap = new Map(districts.map(district => [district.id, district.title]));
-    
-    return { citiesMap, regionsMap, districtsMap };
-  } catch (error) {
-    console.error('Ошибка получения данных о локациях:', error);
-    return {
-      citiesMap: new Map(),
-      regionsMap: new Map(),
-      districtsMap: new Map()
-    };
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const submitForm = async () => {
+  if (!form.value.validate()) {
+    showSnackbar('Заполните все обязательные поля', 'error')
+    return
   }
-}
 
-    const submitForm = async () => {
-      if (!form.value.validate()) {
-        showSnackbar('Заполните все обязательные поля', 'error')
-        return
-      }
+  if (!formData.input.trim()) {
+    showSnackbar('Введите текст сообщения', 'error')
+    return
+  }
 
-      if (!formData.input.trim()) {
-        showSnackbar('Введите текст сообщения', 'error')
-        return
-      }
+  if (formData.files.length === 0) {
+    showSnackbar('Добавьте хотя бы один файл', 'error')
+    return
+  }
 
-      if (formData.files.length === 0) {
-        showSnackbar('Добавьте хотя бы один файл', 'error')
-        return
-      }
+  loading.value = true
 
-      loading.value = true
+  try {
+    // Кодируем файлы в base64
+    const encodedFiles = await encodeFilesToBase64(formData.files);
+    
+    // Для первого файла
+    const file = encodedFiles[0];
+    const currentUser = await getCurrentUser()
 
-      try {
-        const currentUser = await getCurrentUser()
+    let eventTitle = ''
 
-        let deals = []
-        let eventTitle = ''
-
-        if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
-          const eventId = entityInfo.ENTITY_VALUE_ID
-          eventTitle = (await callApi("crm.item.list", {id: eventId}, ["title"], 1052))[0].title
-          
-          deals = await callApi("crm.deal.list", {
-            CATEGORY_ID: "32",
-            STAGE_ID: "C32:NEW",
-            UF_CRM_1742797326: eventId.toString()
-          }, ["ID", "CONTACT_ID"])
-
-        } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
-          const dealId = entityInfo.ENTITY_VALUE_ID
-          const dealInfo = await new Promise((resolve) => {
-            BX24.callMethod(
-              "crm.deal.get",
-              { id: dealId },
-              function(result) {
-                if (result.error()) {
-                  console.error(result.error())
-                  resolve({})
-                } else {
-                  resolve(result.data())
-                }
-              }
-            )
-          })
-
-          const eventId = dealInfo.UF_CRM_1742797326
-          if (!eventId) {
-            showSnackbar('В сделке не указано мероприятие', 'error')
-            loading.value = false
-            return
-          }
-
-          eventTitle = (await callApi("crm.item.list", {id: eventId}, ["title"], 1052))[0].title
-          
-          deals = [{
-            ID: dealId,
-            CONTACT_ID: dealInfo.CONTACT_ID
-          }]
-
-        } else {
-          showSnackbar('Неизвестный тип сущности', 'error')
-          loading.value = false
-          return
-        }
-
-        if (deals.length === 0) {
-          showSnackbar('Нет сделок для обработки', 'warning')
-          loading.value = false
-          return
-        }
-
-        let processedDeals = 0
-        let skippedDeals = 0
-
-        for (const deal of deals) {
-          try {
-            const dealContacts = await callApi("crm.contact.list", 
-              { ID: deal.CONTACT_ID }, 
-              ["ID", "EMAIL", "NAME", "COMPANY_ID", "LAST_NAME", "FIRST_NAME", "SECOND_NAME"]
-            )
-
-            let hasValidEmail = false
-            let emailSent = false
-
-            for (const contact of dealContacts) {
-              if (!contact.EMAIL || contact.EMAIL.length === 0 || !contact.EMAIL[0].VALUE) {
-                console.warn(`Контакт ${contact.NAME} не имеет email`)
-                continue
-              }
-
-              hasValidEmail = true
-
-              let contactCompany = {}
-              if (contact.COMPANY_ID) {
-                contactCompany = await new Promise((resolve) => {
-                  BX24.callMethod(
-                    "crm.company.get",
-                    { id: contact.COMPANY_ID },
-                    function(result) {
-                      if (result.error()) {
-                        console.error(result.error())
-                        resolve({})
-                      } else {
-                        resolve(result.data())
-                      }
-                    }
-                  )
-                })
-              }
-
-              const message = `${contact.NAME}, здравствуйте!\n\n${formData.input}\n\nС уважением, ${currentUser.LAST_NAME || ""} ${currentUser.NAME || ""} ${currentUser.SECOND_NAME || ""}\n${currentUser.WORK_POSITION || ""}`
-              
-              const emailFormData = new FormData()
-              
-              emailFormData.append('to', contact.EMAIL[0].VALUE)
-              emailFormData.append('subject', `Приглашаем вас принять участие в мероприятии "${eventTitle}"`)
-              emailFormData.append('contact', `${contact.NAME}, здравствуйте!`)
-              emailFormData.append('input', formData.input)
-              emailFormData.append('worker', `С уважением,менеджер отдела продаж ${currentUser.LAST_NAME || ""} ${currentUser.NAME || ""} ${currentUser.SECOND_NAME || ""}`)
-              emailFormData.append('position', currentUser.WORK_POSITION || "")
-              emailFormData.append('from_email', currentUser.EMAIL)
-              emailFormData.append('phone', currentUser.PERSONAL_MOBILE)
-              emailFormData.append('from_name', `${currentUser.LAST_NAME || ""} ${currentUser.NAME || ""} ${currentUser.SECOND_NAME || ""}`)
-              
-              formData.files.forEach((file, index) => {
-                emailFormData.append(`file${index}`, file)
-              })
-
-              const response = await fetch('https://master.rymar-consulting.ru/email.php', {
-                method: 'POST',
-                body: emailFormData
-              })
-
-              const result = await response.json()
-              
-              if (result.success) {
-                emailSent = true
-              } else {
-                console.error('Ошибка отправки email:', result.message)
-              }
+    // Получаем название мероприятия
+    if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
+      // Для мероприятия
+      const eventId = entityInfo.ENTITY_VALUE_ID
+      const eventData = await callApi("crm.item.list", {id: eventId}, ["title"], 1052)
+      eventTitle = eventData[0]?.title || 'Мероприятие'
+      
+      // Сохраняем файл в поле мероприятия
+      await new Promise((resolve) => {
+        BX24.callMethod(
+          "crm.item.update",
+          {
+            id: eventId,
+            entityTypeId: 1052,
+            fields: {
+              ufCrm38_1758702557: [file.name, file.base64]
             }
+          },
+          function(result) {
+            if (result.error()) {
+              console.error(result.error())
+            }
+            resolve()
+          }
+        )
+      })
 
-            if (!hasValidEmail) {
-              await addDealComment(deal.ID, 'Рассылка не проведена: у контактов отсутствует email')
-              skippedDeals++
+    } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
+      // Для сделки - получаем мероприятие из сделки
+      const dealId = entityInfo.ENTITY_VALUE_ID
+      const dealInfo = await new Promise((resolve) => {
+        BX24.callMethod(
+          "crm.deal.get",
+          { id: dealId },
+          function(result) {
+            if (result.error()) {
+              console.error(result.error())
+              resolve({})
+            } else {
+              resolve(result.data())
+            }
+          }
+        )
+      })
+
+      const eventId = dealInfo.UF_CRM_1742797326
+      if (!eventId) {
+        showSnackbar('В сделке не указано мероприятие', 'error')
+        loading.value = false
+        return
+      }
+
+      const eventData = await callApi("crm.item.list", {id: eventId}, ["title"], 1052)
+      eventTitle = eventData[0]?.title || 'Мероприятие'
+      
+      // Сохраняем файл в поле сделки
+      await new Promise((resolve) => {
+        BX24.callMethod(
+          "crm.deal.update",
+          {
+            id: dealId,
+            fields: {
+              UF_CRM_1758634964: [file.name, file.base64]
+            }
+          },
+          function(result) {
+            if (result.error()) {
+              console.error(result.error())
+            }
+            resolve()
+          }
+        )
+      })
+    } else {
+      showSnackbar('Неизвестный тип сущности', 'error')
+      loading.value = false
+      return
+    }
+
+    // СОБИРАЕМ ВСЕ КОНТАКТЫ ИЗ ВСЕХ РАССЫЛОК ПОЛЬЗОВАТЕЛЕЙ
+    // ИСКЛЮЧАЕМ КОНТАКТЫ, КОТОРЫЕ БЫЛИ ИСКЛЮЧЕНЫ ВО ВКЛАДКЕ "КОНТАКТЫ"
+    const allContacts = []
+    const contactDealMap = new Map() // Связь контакт -> сделка(и)
+
+    // Проходим по всем пользователям и их рассылкам
+    for (const userDistribution of userDistributions.value) {
+      for (const distribution of userDistribution.distributions) {
+        for (const company of distribution.companies) {
+          for (const contact of company.contacts) {
+            // Проверяем, не исключен ли контакт
+            if (excludedContacts.value.has(+contact.ID)) {
+              console.log(`Контакт ${contact.ID} исключен из рассылки`)
               continue
             }
 
-            if (emailSent) {
-              await new Promise((resolve) => {
-                BX24.callMethod(
-                  "crm.deal.update",
-                  {
-                    id: deal.ID,
-                    fields: {
-                      STAGE_ID: "C32:PREPARATION"
-                    }
-                  },
-                  function(result) {
-                    if (result.error()) {
-                      console.error(result.error())
-                    }
-                    resolve()
-                  }
-                )
-              })
-              processedDeals++
+            // Проверяем, есть ли у контакта email
+            if (!contact.EMAIL || contact.EMAIL.length === 0 || !contact.EMAIL[0]?.VALUE) {
+              console.log(`У контакта ${contact.ID} нет email`)
+              continue
             }
 
-          } catch (error) {
-            console.error('Ошибка обработки сделки:', error)
-            await addDealComment(deal.ID, `Ошибка обработки: ${error.message}`)
+            // Добавляем контакт только если его еще нет в списке
+            const existingContact = allContacts.find(c => c.ID === contact.ID)
+            if (!existingContact) {
+              allContacts.push(contact)
+              
+              // Находим связанную сделку для этого контакта
+              // ВАЖНО: в вашем коде contact может не содержать информацию о сделке
+              // Нужно найти сделку, которая содержит этот контакт
+              if (!contactDealMap.has(contact.ID)) {
+                contactDealMap.set(contact.ID, [])
+              }
+              
+              // Ищем сделку, в которой есть этот контакт
+              for (const deal of deals.value) {
+                if (deal.contacts && deal.contacts.some(c => c.ID === contact.ID)) {
+                  contactDealMap.get(contact.ID).push(deal.ID)
+                  break
+                }
+              }
+            }
           }
         }
-
-        if (processedDeals > 0) {
-          showSnackbar(`Обработка завершена. Успешно: ${processedDeals}, пропущено: ${skippedDeals}`, 'success')
-        } else if (skippedDeals > 0) {
-          showSnackbar(`Все сделки пропущены (отсутствуют email у контактов): ${skippedDeals}`, 'warning')
-        } else {
-          showSnackbar('Не удалось обработать сделки', 'error')
-        }
-
-        form.value.reset()
-        formData.files = []
-
-      } catch (error) {
-        console.error('Общая ошибка:', error)
-        showSnackbar('Ошибка: ' + error.message, 'error')
-      } finally {
-        loading.value = false
       }
     }
 
+    if (allContacts.length === 0) {
+      showSnackbar('Нет контактов с email для рассылки', 'warning')
+      loading.value = false
+      return
+    }
+
+    console.log(`Найдено ${allContacts.length} контактов для рассылки`)
+
+    // Подготавливаем batch-запросы для бизнес-процессов
+    const batchCommands = []
+    const processedDeals = new Set()
+
+    for (const contact of allContacts) {
+      // Выбираем ID шаблона в зависимости от типа сущности
+      const templateId = entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB' ? 3318 : 3316
+      
+      // Определяем тип документа
+      const documentType = entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB' 
+        ? ['crm', 'Bitrix\\Crm\\Integration\\BizProc\\Document\\Dynamic', `DYNAMIC_1052_${entityInfo.ENTITY_VALUE_ID}`]
+        : ['crm', 'CCrmDocumentDeal', `DEAL_${entityInfo.ENTITY_VALUE_ID}`]
+
+      // Получаем ID сделки для этого контакта
+      const contactDealIds = contactDealMap.get(contact.ID) || []
+      const contactDealId = contactDealIds.length > 0 
+        ? contactDealIds[0] 
+        : (deals.value.length > 0 ? deals.value[0].ID : null)
+
+      if (!contactDealId) {
+        console.warn(`Для контакта ${contact.ID} не найдена связанная сделка`)
+        continue
+      }
+
+      // Формируем имя для приветствия
+      const contactName = contact.NAME || contact.FIRST_NAME || ''
+      const greeting = contactName ? `${contactName}, здравствуйте!` : "Здравствуйте!"
+
+      // Формируем имя отправителя
+      const senderName = `${currentUser.LAST_NAME || ""} ${currentUser.NAME || ""} ${currentUser.SECOND_NAME || ""}`.trim()
+
+      // Добавляем команду в batch
+      batchCommands.push({
+        method: 'bizproc.workflow.start',
+        params: {
+          TEMPLATE_ID: templateId,
+          DOCUMENT_ID: documentType,
+          PARAMETERS: {
+            'fromemail': currentUser.EMAIL,
+            'email': contact.EMAIL[0].VALUE,
+            'event': eventTitle,
+            'text': formData.input,
+            'toname': greeting,
+            'fromname': senderName,
+            'phone': currentUser.PERSONAL_MOBILE ? currentUser.PERSONAL_MOBILE : currentUser.WORK_PHONE,
+            'position': currentUser.WORK_POSITION || "",
+          },
+        }
+      })
+
+      // Отмечаем сделку как обработанную
+      processedDeals.add(contactDealId)
+    }
+
+    // Выполняем batch-запросы
+    if (batchCommands.length > 0) {
+      const batchResults = await callBatch(batchCommands, 50)
+
+      let successfulSends = 0
+      let failedSends = 0
+
+      batchResults.forEach((result, index) => {
+        if (result && !result.error) {
+          successfulSends++
+        } else {
+          failedSends++
+          console.error(`Ошибка отправки для контакта ${allContacts[index].ID}:`, result?.error)
+        }
+      })
+      // Обновляем стадии обработанных сделок
+      for (const dealId of processedDeals) {
+        try {
+          await new Promise((resolve) => {
+            BX24.callMethod(
+              "crm.deal.update",
+              {
+                id: dealId,
+                fields: {
+                  STAGE_ID: "C32:PREPARATION"
+                }
+              },
+              function(result) {
+                if (result.error()) {
+                  console.error(`Ошибка обновления стадии сделки ${dealId}:`, result.error())
+                }
+                resolve()
+              }
+            )
+          })
+        } catch (error) {
+          console.error(`Ошибка при обновлении стадии сделки ${dealId}:`, error)
+        }
+      }
+      // Добавляем комментарий в мероприятие
+      if (successfulSends > 0) {
+        try {
+          let eventId
+          if (entityInfo.ENTITY_ID === 'CRM_DYNAMIC_1052_DETAIL_TAB') {
+            eventId = entityInfo.ENTITY_VALUE_ID
+          } else if (entityInfo.ENTITY_ID === 'CRM_DEAL_DETAIL_TAB') {
+            const dealInfo = await new Promise((resolve) => {
+              BX24.callMethod(
+                "crm.deal.get",
+                { id: entityInfo.ENTITY_VALUE_ID },
+                function(result) {
+                  if (result.error()) {
+                    console.error(result.error())
+                    resolve({})
+                  } else {
+                    resolve(result.data())
+                  }
+                }
+              )
+            })
+            eventId = dealInfo.UF_CRM_1742797326
+          }
+
+          if (eventId) {
+            // Формируем текст комментария
+            const userFullName = `${currentUser.LAST_NAME || ''} ${currentUser.NAME || ''} ${currentUser.SECOND_NAME || ''}`.trim()
+            
+            // Группируем контакты по компаниям для комментария
+            const companyContacts = {}
+            
+            allContacts.forEach(contact => {
+              const companyName = contact.COMPANY_TITLE || 'Без компании'
+              const email = contact.EMAIL[0].VALUE
+              const contactName = `${contact.LAST_NAME || ''} ${contact.NAME || ''} ${contact.SECOND_NAME || ''}`.trim() || 'Без имени'
+              
+              if (!companyContacts[companyName]) {
+                companyContacts[companyName] = []
+              }
+              companyContacts[companyName].push(`${contactName} (${email})`)
+            })
+
+            // Формируем текст комментария
+            let commentText = `✉️ ${userFullName} запустил приветственную рассылку:\n\n`
+            commentText += `Сообщение: ${formData.input}\n\n`
+            commentText += `Отправлено контактов: ${successfulSends}\n\n`
+            
+            // Добавляем информацию по компаниям
+            Object.keys(companyContacts).forEach(companyName => {
+              commentText += `Компания: ${companyName}\n`
+              companyContacts[companyName].forEach(contactInfo => {
+                commentText += `• ${contactInfo}\n`
+              })
+              commentText += '\n'
+            })
+
+            // Добавляем комментарий в мероприятие
+            await new Promise((resolve) => {
+              BX24.callMethod(
+                "crm.timeline.comment.add",
+                {
+                  fields: {
+                    ENTITY_ID: eventId,
+                    ENTITY_TYPE: "dynamic_1052",
+                    COMMENT: commentText,
+                    AUTHOR_ID: currentUser.ID
+                  }
+                },
+                function(result) {
+                  if (result.error()) {
+                    console.error('Ошибка добавления комментария в мероприятие:', result.error())
+                  }
+                  resolve()
+                }
+              )
+            })
+          }
+        } catch (error) {
+          console.error('Ошибка при добавлении комментария в мероприятие:', error)
+        }
+      }
+
+      // Показываем результат
+      if (successfulSends > 0) {
+        showSnackbar(
+          `Рассылка завершена. Успешно: ${successfulSends}, ошибок: ${failedSends}`,
+          failedSends > 0 ? 'warning' : 'success'
+        )
+      } else {
+        showSnackbar('Не удалось отправить ни одного сообщения', 'error')
+      }
+
+    } else {
+      showSnackbar('Нет команд для выполнения', 'warning')
+    }
+
+    // Сбрасываем форму
+    form.value.reset()
+    formData.files = []
+    formData.input = ''
+
+  } catch (error) {
+    console.error('Общая ошибка:', error)
+    showSnackbar('Ошибка: ' + error.message, 'error')
+  } finally {
+    loading.value = false
+  }
+}
+// Вспомогательная функция для добавления задержки
+//const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+const encodeFilesToBase64 = (files) => {
+  return Promise.all(
+    files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        
+        reader.onload = () => {
+          resolve({
+            name: file.name,
+            base64: reader.result.split(',')[1] // чистый base64 без префикса
+          })
+        }
+        
+        reader.onerror = error => reject(error)
+        reader.readAsDataURL(file)
+      })
+    })
+  )
+}
     // Наблюдатели
     watch(() => formData.input, () => {
       if (form.value) {
@@ -1169,7 +1560,7 @@ const getLocationData = async () => {
 
     // Автоматическая загрузка контактов при переходе на вкладку
     watch(activeTab, (newTab) => {
-      if (newTab === 'contacts' && groupedContacts.value.length === 0) {
+      if (newTab === 'contacts' && deals.value.length === 0) {
         loadContacts()
       }
     })
@@ -1179,12 +1570,13 @@ const getLocationData = async () => {
       BX24.ready(function () {
         BX24.init(async function () {
           await checkEntityValidity()
+          loadContacts()
         })
       })
     })
 
     // Возвращаем все переменные и методы
-    return {
+return {
       loadingData,
       loading,
       loadingContacts,
@@ -1193,19 +1585,22 @@ const getLocationData = async () => {
       form,
       formData,
       snackbar,
-      groupedContacts,
+      deals,
+      contactsByCompany,
+      filteredDeals,
       errorMessage,
       requiredRules,
       fileRules,
       isFormValid,
       totalContacts,
-      totalDeals,
-      totalCompanies,
-      totalContactsWithoutCompany,
+      excludedContactsCount,
       submitForm,
       showSnackbar,
       loadContacts,
-      getFormattedLocation,
+      isExcluded,
+      toggleExcludeContact,
+      getExcludedCount,
+      userDistributions,
     }
   }
 }
