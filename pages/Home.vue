@@ -707,7 +707,7 @@ const callBatch = async (commands, maxBatchSize = 50) => {
           STAGE_ID: "C32:NEW"
         };
         if (currentUserId !== 1612) {
-          data.ASSIGNED_BY_ID = currentUserId;
+          filter.ASSIGNED_BY_ID = currentUserId;
         }
 
         const addedDeals = await callApi(
